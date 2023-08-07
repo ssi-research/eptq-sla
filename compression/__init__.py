@@ -1,0 +1,2 @@
+from compression.compression_config import CompressionConfig
+from compression.quantization_module_wrapper import QuantizationModelWrapper
