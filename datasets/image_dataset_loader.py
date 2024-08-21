@@ -1,12 +1,7 @@
-import random
-
 from torch.utils.data import ConcatDataset
 from torchvision import datasets
 import torch
 from torchvision.transforms import transforms
-
-from constants import TRAIN_DIR
-from constants import VAL_DIR
 
 
 def random_crop_flip_preprocess():
@@ -29,16 +24,29 @@ def validation_preprocess():
     ])
 
 
+def get_init_rep_dset(args):
+    init_dataset = datasets.ImageFolder(args.train_dir, random_crop_flip_preprocess())
+
+    return init_dataset
 
 
+def get_representative_dataset(args, shuffle):
+    init_dataset = get_init_rep_dset(args)
+    representative_data_loader = torch.utils.data.DataLoader(init_dataset,
+                                                             batch_size=args.batch_size,
+                                                             shuffle=shuffle,
+                                                             num_workers=4,
+                                                             pin_memory=True)
+    return representative_data_loader
 
-def get_imagenet_dataset_loader(batch_size):
-    preprocess = validation_preprocess()
-    val_dataset = datasets.ImageFolder(VAL_DIR, preprocess)
 
-    return torch.utils.data.DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True)
+def get_train_samples(train_loader, num_samples):
+    train_data = []
+    labels = []
+    for batch in train_loader:
+        train_data.append(batch[0])
+        labels.append(batch[1])
+        if len(train_data) * batch[0].size(0) >= num_samples:
+            break
+    random_samples_indices = torch.randperm(num_samples)[:num_samples]
+    return torch.cat(train_data, dim=0)[random_samples_indices], torch.cat(labels, dim=0)[random_samples_indices]
