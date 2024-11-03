@@ -1,3 +1,9 @@
+"""
+ This file is copied from https://github.com/wimh966/QDrop/blob/qdrop/qdrop
+ and modified for this project's needs.
+"""
+
+
 import torch.nn
 import torch.nn as nn
 import math
